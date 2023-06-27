@@ -9,6 +9,7 @@ public class PluginInit : MonoBehaviour
     AndroidJavaObject unityActivity;
     AndroidJavaObject _pluginInstance;
     AndroidJavaObject unityContext;
+    bool UPDsetup = false;
 
 
     // Start is called before the first frame update
@@ -47,32 +48,43 @@ public class PluginInit : MonoBehaviour
        // Debug.Log("Request: " + result);
         return result;
     }
+    public string getUDPPacket(){
+        if(!UPDsetup){
+            _pluginInstance.Call("setUpUDP");
+            Debug.Log("UDP set up");
+            UPDsetup = true;
+        }
+        string result = _pluginInstance.Call<string>("getUDPPacket");
+        Debug.Log("UDP Packet: " + result);
+        return result;
+
+    }
 
     public void toast(){
         if (_pluginInstance != null)
         {
+            int numberofcalls = 0;
             var watch = new System.Diagnostics.Stopwatch();
             //parse string as integer
-            int x = Int32.Parse(getRequest());
-            int y = 0;
+            List<int> numbers = new List<int>();
             for (int i = 0; i < 10; i++)
             {
                 
                 watch.Start();
                 for (int j = 0; j < 100; j++)
-                {
-                    y = Int32.Parse(getRequest());
-                    if (x != y - 1)
-                    {
-                        Debug.Log("Error: " + x + " " + y);
-                    }
-                    x++;
+                {   
+                    int v = Int32.Parse(getUDPPacket());
+                    Debug.Log(v);
+                    numbers.Add(v);
                 }
                 watch.Stop();
                 Debug.Log($"Execution Time: {watch.ElapsedMilliseconds} ms");
                 Debug.Log($"Execution Time per request: {watch.ElapsedMilliseconds / 100} ms");
                 watch.Restart();
             }
+            numbers.Sort();
+            Debug.Log(string.Join(" ", numbers));
+            Debug.Log("Number of Numbers: " + numbers.Count);
 
 
         }
