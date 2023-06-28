@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PluginInit : MonoBehaviour
 {
@@ -10,13 +11,14 @@ public class PluginInit : MonoBehaviour
     AndroidJavaObject _pluginInstance;
     AndroidJavaObject unityContext;
     bool UPDsetup = false;
+    public TMP_Text Debug_Text;
+    string final_result = "";
 
 
     // Start is called before the first frame update
     void Start()
     {
         InitialisePlugin("com.example.unityplugin.PluginInstance");
-        
     }
 
     // Update is called once per frame
@@ -45,17 +47,15 @@ public class PluginInit : MonoBehaviour
     }
     public string getRequest(){
         string result = _pluginInstance.Call<string>("getHTML");
-       // Debug.Log("Request: " + result);
         return result;
     }
     public string getUDPPacket(){
         if(!UPDsetup){
             _pluginInstance.Call("setUpUDP");
-            Debug.Log("UDP set up");
+            Debug_Text.text += "UDP set up" + "\n";
             UPDsetup = true;
         }
         string result = _pluginInstance.Call<string>("getUDPPacket");
-        Debug.Log("UDP Packet: " + result);
         return result;
 
     }
@@ -63,33 +63,23 @@ public class PluginInit : MonoBehaviour
     public void toast(){
         if (_pluginInstance != null)
         {
-            int numberofcalls = 0;
             var watch = new System.Diagnostics.Stopwatch();
             //parse string as integer
-            List<int> numbers = new List<int>();
-            for (int i = 0; i < 10; i++)
-            {
+            //for (int i = 0; i < 10; i++)
+            //{
                 
                 watch.Start();
-                for (int j = 0; j < 100; j++)
+                for (int j = 0; j < 52; j++)
                 {   
-                    int v = Int32.Parse(getUDPPacket());
-                    Debug.Log(v);
-                    numbers.Add(v);
+                  final_result += getUDPPacket()[0];
                 }
                 watch.Stop();
-                Debug.Log($"Execution Time: {watch.ElapsedMilliseconds} ms");
-                Debug.Log($"Execution Time per request: {watch.ElapsedMilliseconds / 100} ms");
+                Debug_Text.text += "final result: " + final_result + "\n";
+                Debug_Text.text += $"Execution Time: {watch.ElapsedMilliseconds} ms" + "\n";
+                Debug_Text.text += $"Execution Time per request: {watch.ElapsedMilliseconds / 100} ms" + "\n";
                 watch.Restart();
-            }
-            numbers.Sort();
-            Debug.Log(string.Join(" ", numbers));
-            Debug.Log("Number of Numbers: " + numbers.Count);
-
-
-        }
-        else{
-            Debug.Log("Plugin error");
+            //}
+            final_result = "";
         }
     }
 
