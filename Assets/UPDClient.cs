@@ -5,10 +5,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
+using TMPro;
+
 
 public class UPDClient : MonoBehaviour
 {
     UdpClient Client;
+    public TMP_Text Debug_Text;
+
 
     int x = 0;
     int y = 0;
@@ -52,15 +56,16 @@ public class UPDClient : MonoBehaviour
         }
         //Process codes
         x++;
-        if (x < 1000 && x % 10 == 0){
-            Debug.Log("Number of packets: " + x);
+        if (x < 100 && x % 10 == 0){
+            Debug_Text.text += "Number of packets: " + x + "\n";
         }
 
 
-        if (x == 1000){
+        if (x == 100){
             watch.Stop();
-            Debug.Log("Number of packets: " + y);
-            Debug.Log("Time elapsed: " + watch.ElapsedMilliseconds);
+            Debug_Text.text += "Message: " + Encoding.UTF8.GetString(received) + "\n";
+            Debug_Text.text += "Number of packets: " + y + "\n";
+            Debug_Text.text += "Time elapsed: " + watch.ElapsedMilliseconds;
         }
 
         Encoding.UTF8.GetString(received);
