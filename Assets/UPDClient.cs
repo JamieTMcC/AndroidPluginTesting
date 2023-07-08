@@ -12,16 +12,21 @@ public class UPDClient : MonoBehaviour
 {
     UdpClient Client;
     public TMP_Text Debug_Text;
-
+    DateTime currenttime;
+    bool printed = false;
+    string receivedString = "";
+    public float[] gyro = new float[3];
+    public float[] accel = new float[3];
 
     int x = 0;
-    int y = 0;
+    int y = -1;
     System.Diagnostics.Stopwatch watch;
 
     // Start is called before the first frame update
     void Start()
     {
         Client = new UdpClient(2000);
+        Debug_Text.text = "";
         try
         {
             Client.BeginReceive(new AsyncCallback(recv), null);
@@ -40,35 +45,39 @@ public class UPDClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(receivedString);
+        gyro = getGyro(receivedString);
+        accel = getAccel(receivedString);
+
     }
 
     private void recv(IAsyncResult res)
     {
         IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 2000);
         byte[] received = Client.EndReceive(res, ref RemoteIpEndPoint);
-        
-        if (received.Length > 10)
-        {
-            y++;
-        }
-        else{
-            Debug.Log("Packet dropped");
-        }
-        //Process codes
-        x++;
-        if (x < 100 && x % 10 == 0){
-            Debug_Text.text += "Number of packets: " + x + "\n";
-        }
-
-
-        if (x == 100){
-            watch.Stop();
-            Debug_Text.text += "Message: " + Encoding.UTF8.GetString(received) + "\n";
-            Debug_Text.text += "Number of packets: " + y + "\n";
-            Debug_Text.text += "Time elapsed: " + watch.ElapsedMilliseconds;
-        }
-
-        Encoding.UTF8.GetString(received);
+        receivedString = Encoding.ASCII.GetString(received);
         Client.BeginReceive(new AsyncCallback(recv), null);
+    }
+
+    public float[] getGyro(String s){
+        float[] gyro = new float[3];
+        string[] split = s.Split('|');
+        for (int i = 3; i < 6; i++)
+        {
+            gyro[i-3] = float.Parse(split[i])/65536;
+        }
+        Debug.Log(gyro[0]);
+
+        return gyro;
+    }
+
+    public float[] getAccel(String s){
+        float[] accel = new float[3];
+        string[] split = s.Split('|');
+        for (int i = 0; i < 3; i++)
+        {
+            accel[i] = float.Parse(split[i]);
+        }
+        return accel;
     }
 }
